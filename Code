@@ -1,0 +1,718 @@
+###########################Part 1########################################
+# This part of the program is used to find all of the players probability 
+# to either get strucken out, single, double, triple, homerun or walk.
+# I will be using the players 2019 stats to generate their probabilities.
+# I will also need to generate each players probability one by one. 
+import math
+
+obp = eval(input('Enter in the players on base percentage: '))
+walks = eval(input('Enter in the players number of walks: '))
+doubles = eval(input('Enter in the players number of doubles: '))
+triples = eval(input('Enter in the players number of triples: '))
+hr = eval(input('Enter in the players number of homeruns: '))
+hits = eval(input('Enter in the players number of hits: '))
+pa = eval(input('Enter in the players number of plate appearances: '))
+steals = eval(input('Enter in the players number of steals: '))
+gp = eval(input('Enter in the players number of games played: '))
+singles = hits - doubles - triples - hr
+
+out_prob = (1-obp)*1000
+walk_prob = (walks/pa)*1000 + out_prob
+single_prob = (singles/pa)*1000 + walk_prob
+if doubles == 0:
+    double_prob = 0
+elif double_prob>1:
+    double_prob = (doubles/pa)*1000 + single_prob
+if triples == 0:
+    triple_prob = 0
+elif triple_prob>1:
+    triple_prob = (triples/pa)*1000 + double_prob
+steal_prob = steals/gp * 1000
+
+print('\nThis players out probability is: ',out_prob)
+print('This players walk probability is: ',walk_prob)
+print('This players single probability is: ',single_prob)
+print('This players double probability is: ',double_prob)
+print('This players triple probability is: ',triple_prob)
+print('This players steal probability is: ',steal_prob)
+
+###########################Part 2########################################
+# Simulating a 9 inning game with the dodgers 2020 lineup but using their 2019 stats
+
+# This is the first part of simulating a game between the Los Angeles Dodgers and the Arizona Diamondbacks. In this game
+# there will be no stealing or no double plays possible. So the game is all dependent on the batter and their ability
+# to make plays and hit batters in. I will be running these games one after another and compare the two teams final score
+# to determine who will be crowned the winner.
+
+
+# Inputting Player Stats
+lineup = {1: {'name': 'Mookie Betts', 'out_prob': 609, 'walk_prob': 751,'single_prob': 895,'double_prob': 952,'triple_prob': 959,},
+          2: {'name': 'Max Muncy', 'out_prob': 626, 'walk_prob': 792,'single_prob': 901,'double_prob': 938,'triple_prob': 940,},
+          3: {'name': 'Justin Turner', 'out_prob': 628, 'walk_prob': 746,'single_prob': 907,'double_prob': 950,'triple_prob': 0,},
+          4: {'name': 'Cody Bellinger', 'out_prob': 594, 'walk_prob': 742,'single_prob': 872,'double_prob': 924,'triple_prob': 928,},
+          5: {'name': 'A.J. Pollock', 'out_prob': 673, 'walk_prob': 761,'single_prob': 910,'double_prob': 954,'triple_prob': 957,},
+          6: {'name': 'Corey Seager', 'out_prob': 665, 'walk_prob': 754,'single_prob': 881,'double_prob': 963,'triple_prob': 964,},
+          7: {'name': 'Gavin Lux', 'out_prob': 695, 'walk_prob': 780,'single_prob': 915,'double_prob': 963,'triple_prob': 975,},
+          8: {'name': 'Will Smith', 'out_prob': 663, 'walk_prob': 780,'single_prob': 877,'double_prob': 923,'triple_prob': 0,},
+          9: {'name': 'Walker Buehler', 'out_prob': 857, 'walk_prob': 918,'single_prob': 978,'double_prob': 0,'triple_prob': 0,},
+    
+}
+
+# Initialize the game
+import random
+x = random.randint(0,1001)
+
+outs = 0
+runs = 0
+first = 0
+second = 0
+third = 0
+home = 0
+import random
+x = random.randint(0,1000)
+
+# This will loop over every player in the listed players above until the game reaches 27 out (which is 9 innings)
+while outs < 27:
+    x = random.randint(0,1000)
+    for i in lineup.keys():
+        print('\nNow Batting\n',lineup[i]['name'])
+        
+        # This statement uses the random number 'x' and uses it to determine wheter or not the batter will get struckout
+        if x <= lineup[i]['out_prob']:
+            outs = outs + 1
+            print("OUT!")
+            
+            # When 3 outs occur then end the inning and print out the score
+            x = random.randint(0,1000)
+            if outs % 3 == 0:
+                first = 0
+                second = 0
+                third = 0
+                print('\nEnd of Inning. Current Score: ' + str(runs) + ' runs!\n')
+                
+        # When there are 27 outs then end the game and break the loop
+        elif outs % 27 == 0:
+                break
+
+        # This statement determines if the current batter will get walked and if he does then players are advanved
+        elif x > lineup[i]['out_prob'] and x < lineup[i]['walk_prob']:
+            print ("Walk")
+            if first == 0 and second == 0 and third == 0:
+                first = 1
+            elif first == 0 and third == 0 and second == 1:
+                first = 1
+            elif first == 0 and second == 0 and third == 1:
+                first = 1
+            elif second == 0 and third == 0 and first == 1:
+                second = 1
+            elif second == 1 and third == 1 and first == 0:
+                first = 1
+            elif first == 1 and third == 1 and second == 0:
+                second = 1
+            elif first == 1 and second == 1 and third == 0:
+                third = 1
+            else:
+                runs = runs + 1
+            x = random.randint(0,1000)
+            
+        # This statement determines if the batter hits for a single and will advance the runners accordingly 
+        elif x > lineup[i]['walk_prob'] and x < lineup[i]['single_prob']:
+            print ("Single")
+            if first == 0  and second == 0 and third == 0:
+                first = 1
+            elif first == 0 and third == 0 and second == 1:
+                first = 1
+                second = 0
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                first = 1
+                third = 0
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                second = 1
+            elif second == 1 and third == 1 and first == 0:
+                first = 1
+                second = 0
+                third = 0
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                second = 1
+                third = 0
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 0:
+                runs = runs + 1
+            else:
+                third = 0
+                runs = runs + 2
+            x = random.randint(0,1000)
+            
+        # This statement determines if the batter will hit for a double and will advance the runner accordingly
+        elif x > lineup[i]['single_prob'] and x < lineup[i]['double_prob']: 
+            print ("Double")
+            if first == 0 and second == 0 and third == 0:
+                second = 1
+            elif first == 0 and third == 0 and second == 1:
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                second = 1
+                third = 0
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                second = 1
+                third = 1
+            elif second == 1 and third == 1 and first == 0:
+                third = 0
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                second = 1
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 0:
+                first = 0
+                third = 1
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 1:
+                first = 0
+                runs = runs + 2
+            x = random.randint(0,1000)
+            
+        # This statement determines if the batter will hit for a triple and will score any runners that were on base
+        elif x > lineup[i]['double_prob'] and x < lineup[i]['triple_prob']: 
+            print ("Triple")
+            if first == 0 and second and third == 0:
+                third = 1
+            elif first == 0 and third == 0 and second == 1:
+                second = 0
+                third = 1
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                third = 1
+                runs = runs + 1
+            elif second == 1 and third == 1 and first == 0:
+                second = 0  
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                runs = runs + 2
+            elif first == 1 and second == 1 and third == 0:
+                third = 1
+                second = 0
+                first = 0
+                runs = runs + 2
+            else:
+                first = 0
+                second = 0
+                runs = runs + 3
+            x = random.randint(0,1000) 
+            
+        # If no other cases apply then the batter will hit for a homerun and will score every runner & batter
+        else:
+            print ("Homerun!")
+            if first == 0 and second == 0 and third == 0:
+                runs = runs + 1
+            elif first == 0 and third == 0 and second == 1:
+                second = 0
+                runs = runs + 2
+            elif first == 0 and second == 0 and third == 1:
+                third = 0
+                runs = runs + 2
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                runs = runs + 2
+            elif second == 1 and third == 1 and first == 0:
+                second = 0
+                third = 0
+                runs = runs + 3
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                third = 0
+                runs = runs + 3
+            elif first == 1 and second == 1 and third == 0:
+                first = 0
+                second = 0
+                runs = runs + 3
+            else:
+                first = 0
+                second = 0
+                third = 0
+                runs = runs + 4
+        x = random.randint(0,1000)
+        
+# Print out the results of the game, including runs scored
+print('')
+print("Ball game!")
+print('You scored ' + str(runs) + ' runs!')
+print('')
+
+###########################Part 3########################################
+# Simulating a 9 inning game with the diamondbacks 2020 lineup but using their 2019 stats
+
+# This is the second part of simulating a game between the Los Angeles Dodgers and the Arizona Diamondbacks. In this game
+# there will be no stealing or no double plays possible. So the game is all dependent on the batter and their ability
+# to make plays and hit batters in. I will be running these games one after another and compare the two teams final score
+# to determine who will be crowned the winner.
+
+# Inputting Player Stats
+lineup = {1: {'name': 'Starling Marte', 'out_prob': 658, 'walk_prob': 700,'single_prob': 869,'double_prob': 922,'triple_prob': 932,},
+          2: {'name': 'Ketel Marte', 'out_prob': 611, 'walk_prob': 695,'single_prob': 870,'double_prob': 927,'triple_prob': 942,},
+          3: {'name': 'Eduardo Escobar', 'out_prob': 678, 'walk_prob': 751,'single_prob': 890,'double_prob': 931,'triple_prob': 946,},
+          4: {'name': 'Christian Walker', 'out_prob': 652, 'walk_prob': 763,'single_prob': 897,'double_prob': 940,'triple_prob': 942,},
+          5: {'name': 'David Peralta', 'out_prob': 657, 'walk_prob': 739,'single_prob': 883,'double_prob': 952,'triple_prob': 959,},
+          6: {'name': 'Kole Calhoun', 'out_prob': 675, 'walk_prob': 785,'single_prob': 888,'double_prob': 934,'triple_prob': 936,},
+          7: {'name': 'Nick Ahmed', 'out_prob': 684, 'walk_prob': 767,'single_prob': 900,'double_prob': 33,'triple_prob': 962,},
+          8: {'name': 'Carson Kelly', 'out_prob': 652, 'walk_prob': 783,'single_prob': 893,'double_prob': 945,'triple_prob': 0,},
+          9: {'name': 'Madison Bumgarner', 'out_prob': 764, 'walk_prob': 882,'single_prob': 961,'double_prob': 0,'triple_prob': 0,},
+    
+}
+
+# Initialize the game
+import random
+x = random.randint(0,1001)
+
+outs = 0
+runs = 0
+first = 0
+second = 0
+third = 0
+home = 0
+import random
+x = random.randint(0,1000)
+
+# This will loop over every player in the listed players above until the game reaches 27 out (which is 9 innings)
+while outs < 27:
+    x = random.randint(0,1000)
+    for i in lineup.keys():
+        print('\nNow Batting\n',lineup[i]['name'])
+        
+        # This statement uses the random number 'x' and uses it to determine wheter or not the batter will get struckout
+        if x <= lineup[i]['out_prob']:
+            outs = outs + 1
+            print("OUT!")
+            
+            # When 3 outs occur then end the inning and print out the score
+            x = random.randint(0,1000)
+            if outs % 3 == 0:
+                first = 0
+                second = 0
+                third = 0
+                print('\nEnd of Inning. Current Score: ' + str(runs) + ' runs!\n')
+                
+        # When there are 27 outs then end the game and break the loop
+        elif outs % 27 == 0:
+                break
+
+        # This statement determines if the current batter will get walked and if he does then players are advanved
+        elif x > lineup[i]['out_prob'] and x < lineup[i]['walk_prob']:
+            print ("Walk")
+            if first == 0 and second == 0 and third == 0:
+                first = 1
+            elif first == 0 and third == 0 and second == 1:
+                first = 1
+            elif first == 0 and second == 0 and third == 1:
+                first = 1
+            elif second == 0 and third == 0 and first == 1:
+                second = 1
+            elif second == 1 and third == 1 and first == 0:
+                first = 1
+            elif first == 1 and third == 1 and second == 0:
+                second = 1
+            elif first == 1 and second == 1 and third == 0:
+                third = 1
+            else:
+                runs = runs + 1
+            x = random.randint(0,1000)
+            
+        # This statement determines if the batter hits for a single and will advance the runners accordingly 
+        elif x > lineup[i]['walk_prob'] and x < lineup[i]['single_prob']:
+            print ("Single")
+            if first == 0  and second == 0 and third == 0:
+                first = 1
+            elif first == 0 and third == 0 and second == 1:
+                first = 1
+                second = 0
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                first = 1
+                third = 0
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                second = 1
+            elif second == 1 and third == 1 and first == 0:
+                first = 1
+                second = 0
+                third = 0
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                second = 1
+                third = 0
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 0:
+                runs = runs + 1
+            else:
+                third = 0
+                runs = runs + 2
+            x = random.randint(0,1000)
+            
+        # This statement determines if the batter will hit for a double and will advance the runner accordingly
+        elif x > lineup[i]['single_prob'] and x < lineup[i]['double_prob']: 
+            print ("Double")
+            if first == 0 and second == 0 and third == 0:
+                second = 1
+            elif first == 0 and third == 0 and second == 1:
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                second = 1
+                third = 0
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                second = 1
+                third = 1
+            elif second == 1 and third == 1 and first == 0:
+                third = 0
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                second = 1
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 0:
+                first = 0
+                third = 1
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 1:
+                first = 0
+                runs = runs + 2
+            x = random.randint(0,1000)
+            
+        # This statement determines if the batter will hit for a triple and will score any runners that were on base
+        elif x > lineup[i]['double_prob'] and x < lineup[i]['triple_prob']: 
+            print ("Triple")
+            if first == 0 and second and third == 0:
+                third = 1
+            elif first == 0 and third == 0 and second == 1:
+                second = 0
+                third = 1
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                third = 1
+                runs = runs + 1
+            elif second == 1 and third == 1 and first == 0:
+                second = 0  
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                runs = runs + 2
+            elif first == 1 and second == 1 and third == 0:
+                third = 1
+                second = 0
+                first = 0
+                runs = runs + 2
+            else:
+                first = 0
+                second = 0
+                runs = runs + 3
+            x = random.randint(0,1000) 
+            
+        # If no other cases apply then the batter will hit for a homerun and will score every runner & batter
+        else:
+            print ("Homerun!")
+            if first == 0 and second == 0 and third == 0:
+                runs = runs + 1
+            elif first == 0 and third == 0 and second == 1:
+                second = 0
+                runs = runs + 2
+            elif first == 0 and second == 0 and third == 1:
+                third = 0
+                runs = runs + 2
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                runs = runs + 2
+            elif second == 1 and third == 1 and first == 0:
+                second = 0
+                third = 0
+                runs = runs + 3
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                third = 0
+                runs = runs + 3
+            elif first == 1 and second == 1 and third == 0:
+                first = 0
+                second = 0
+                runs = runs + 3
+            else:
+                first = 0
+                second = 0
+                third = 0
+                runs = runs + 4
+        x = random.randint(0,1000)
+        
+# Print out the results of the game, including runs scored
+print('')
+print("Ball game!")
+print('You scored ' + str(runs) + ' runs!')
+print('')
+
+###########################Part 4########################################
+# Simulating a 9 inning game with the dodgers 2020 lineup but using their 2019 stats
+# This game responds to the big question problem, which is if players stealing bases is beneficial and will
+# help the team win the game overall. So I have inputted an additional stat for each player which is their 'stolen bases' stat
+
+# The players will only steal a base if they are currently on first or second base with no other players in front of them.
+# I will generate a random number just like I do for determining the batters 'at bat' but I will use this random number to determine
+# whether or not they are capable or not to steal a base. In other words, only the faster players will steal a base which will put them
+# in a better scoring position. 
+
+# Inputting Player Stats
+lineup = {1: {'name': 'Mookie Betts', 'out_prob': 609, 'walk_prob': 751,'single_prob': 895,'double_prob': 952,'triple_prob': 959,'steal_prob': 106},
+          2: {'name': 'Max Muncy', 'out_prob': 626, 'walk_prob': 792,'single_prob': 901,'double_prob': 938,'triple_prob': 940,'steal_prob': 28},
+          3: {'name': 'Justin Turner', 'out_prob': 628, 'walk_prob': 746,'single_prob': 907,'double_prob': 950,'triple_prob': 0,'steal_prob': 14},
+          4: {'name': 'Cody Bellinger', 'out_prob': 594, 'walk_prob': 742,'single_prob': 872,'double_prob': 924,'triple_prob': 928,'steal_prob': 96},
+          5: {'name': 'A.J. Pollock', 'out_prob': 673, 'walk_prob': 761,'single_prob': 910,'double_prob': 954,'triple_prob': 957,'steal_prob': 11},
+          6: {'name': 'Corey Seager', 'out_prob': 665, 'walk_prob': 754,'single_prob': 881,'double_prob': 963,'triple_prob': 964,'steal_prob': 7},
+          7: {'name': 'Gavin Lux', 'out_prob': 695, 'walk_prob': 780,'single_prob': 915,'double_prob': 963,'triple_prob': 975,'steal_prob': 86},
+          8: {'name': 'Will Smith', 'out_prob': 663, 'walk_prob': 780,'single_prob': 877,'double_prob': 923,'triple_prob': 0,'steal_prob': 37,},
+          9: {'name': 'Walker Buehler', 'out_prob': 857, 'walk_prob': 918,'single_prob': 978,'double_prob': 0,'triple_prob': 0,'steal_prob': 0},
+    
+}
+
+# Initialize the game
+import random
+x = random.randint(0,1001)
+y = random.randint(0,301)
+outs = 0
+runs = 0
+first = 0
+second = 0
+third = 0
+home = 0
+import random
+x = random.randint(0,1000)
+y = random.randint(0,300)
+
+# This will loop over every player in the listed players above until the game reaches 27 out (which is 9 innings)
+while outs < 27:
+    x = random.randint(0,1000)
+    y = random.randint(0,300)
+    for i in lineup.keys():
+        print('\nNow Batting\n',lineup[i]['name'])
+        
+        # This statement uses the random number 'x' and uses it to determine whether or not the batter will stikeout
+        if x <= lineup[i]['out_prob']:
+            outs = outs + 1
+            print("OUT!")
+
+            # When 3 outs occur then end the inning and print out current score
+            x = random.randint(0,1000)
+            if outs % 3 == 0:
+                first = 0
+                second = 0
+                third = 0
+                print('\nEnd of Inning. Current Score: ' + str(runs) + ' runs!\n')
+                
+
+        # When there are 27 out end the game        
+        elif outs % 27 == 0:
+                break
+        
+        # This statement determines if the current batter will get walked and if he does then players are advanced
+        elif x > lineup[i]['out_prob'] and x < lineup[i]['walk_prob']:
+            print ("Walk")
+            if first == 0 and second == 0 and third == 0:
+                first = 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    first == 0 and second == 1
+                    print('\nBase Stolen')
+            elif first == 0 and third == 0 and second == 1:
+                first = 1
+            elif first == 0 and second == 0 and third == 1:
+                first = 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    first == 0 and second == 1 and third == 1
+                    print('\nBase Stolen')
+            elif second == 0 and third == 0 and first == 1:
+                second = 1
+            elif second == 1 and third == 1 and first == 0:
+                first = 1
+            elif first == 1 and third == 1 and second == 0:
+                second = 1
+            elif first == 1 and second == 1 and third == 0:
+                third = 1
+            else:
+                runs = runs + 1
+            x = random.randint(0,1000)
+            y = random.randint(0,300)
+            
+        # This statement determines if the batter hits for a single and will advance the runners accordingly
+        elif x > lineup[i]['walk_prob'] and x < lineup[i]['single_prob']:
+            print ("Single")
+            if first == 0  and second == 0 and third == 0:
+                first = 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    first == 0 and second == 1
+                    print('\nBase Stolen')
+            elif first == 0 and third == 0 and second == 1:
+                first = 1
+                second = 0
+                runs = runs + 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    first == 0 and second == 1
+                    print('\nBase Stolen')
+            elif first == 0 and second == 0 and third == 1:
+                first = 1
+                third = 0
+                runs = runs + 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    first == 0 and second == 1
+                    print('\nBase Stolen')
+            elif second == 0 and third == 0 and first == 1:
+                second = 1
+            elif second == 1 and third == 1 and first == 0:
+                first = 1
+                second = 0
+                third = 0
+                runs = runs + 2
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    first == 0 and second == 1
+                    print('\nBase Stolen')
+            elif first == 1 and third == 1 and second == 0:
+                second = 1
+                third = 0
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 0:
+                runs = runs + 1
+            else:
+                third = 0
+                runs = runs + 2
+            x = random.randint(0,1000)
+            y = random.randint(0,300)
+        # This statement determines if the batter will hit for a double and will advance the runners accordingly
+        elif x > lineup[i]['single_prob'] and x < lineup[i]['double_prob']: 
+            print ("Double")
+            if first == 0 and second == 0 and third == 0:
+                second = 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    second == 0 and third ==1
+                    print('\nBase Stolen')
+            elif first == 0 and third == 0 and second == 1:
+                runs = runs + 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    second == 0 and third ==1
+                    print('\nBase Stolen')
+            elif first == 0 and second == 0 and third == 1:
+                second = 1
+                third = 0
+                runs = runs + 1
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    second == 0 and third ==1
+                    print('\nBase Stolen')
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                second = 1
+                third = 1
+            elif second == 1 and third == 1 and first == 0:
+                third = 0
+                runs = runs + 2
+                # This will have the batter steal if their probability is greater than the randomized number 'y'
+                if y > lineup[i]['steal_prob']:
+                    second == 0 and third ==1
+                    print('\nBase Stolen')
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                second = 1
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 0:
+                first = 0
+                third = 1
+                runs = runs + 1
+            elif first == 1 and second == 1 and third == 1:
+                first = 0
+                runs = runs + 2
+            x = random.randint(0,1000)
+            y = random.randint(0,300)
+        # This statement determines if the batter will hit for a triple and will advance the runners accordingly
+        elif x > lineup[i]['double_prob'] and x < lineup[i]['triple_prob']: 
+            print ("Triple")
+            if first == 0 and second and third == 0:
+                third = 1
+            elif first == 0 and third == 0 and second == 1:
+                second = 0
+                third = 1
+                runs = runs + 1
+            elif first == 0 and second == 0 and third == 1:
+                runs = runs + 1
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                third = 1
+                runs = runs + 1
+            elif second == 1 and third == 1 and first == 0:
+                second = 0  
+                runs = runs + 2
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                runs = runs + 2
+            elif first == 1 and second == 1 and third == 0:
+                third = 1
+                second = 0
+                first = 0
+                runs = runs + 2
+            else:
+                first = 0
+                second = 0
+                runs = runs + 3
+            x = random.randint(0,1000) 
+            y = random.randint(0,300)
+        # This statement determines if the batter will hit for a homerun and will score all runners
+        else:
+            print ("Homerun!")
+            if first == 0 and second == 0 and third == 0:
+                runs = runs + 1
+            elif first == 0 and third == 0 and second == 1:
+                second = 0
+                runs = runs + 2
+            elif first == 0 and second == 0 and third == 1:
+                third = 0
+                runs = runs + 2
+            elif second == 0 and third == 0 and first == 1:
+                first = 0
+                runs = runs + 2
+            elif second == 1 and third == 1 and first == 0:
+                second = 0
+                third = 0
+                runs = runs + 3
+            elif first == 1 and third == 1 and second == 0:
+                first = 0
+                third = 0
+                runs = runs + 3
+            elif first == 1 and second == 1 and third == 0:
+                first = 0
+                second = 0
+                runs = runs + 3
+            else:
+                first = 0
+                second = 0
+                third = 0
+                runs = runs + 4
+        x = random.randint(0,1000)
+        y = random.randint(0,300)
+
+# Print game results
+print('')
+print("Ball game!")
+print('You scored ' + str(runs) + ' runs!')
+print('')
